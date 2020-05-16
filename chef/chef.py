@@ -3,9 +3,10 @@ import os.path
 import getpass
 import json
 import pickle
+import argparse
 from time import sleep
 from tabulate import tabulate
-from sys import argv
+from sys import argv, exit
 
 class ns:
     pass
@@ -22,6 +23,13 @@ nsi.password = None
 nsi.browser = None
 nsi.init_status = None
 nsi.args = argv[1:]
+
+parser = argparse.ArgumentParser(description="CLI Version for Codechef for dummies....")
+parser.add_argument("-n", "--nologin", help="Perform some actions without logging in", action="store_true")
+parser.add_argument("-l", "--list-contests", help="Lists all the active contests", action="store_true")
+# parser.add_argument()
+nsi.arg = parser.parse_args()
+nsi.parser = parser
 
 
 def init():
@@ -41,11 +49,18 @@ def init():
     
     retrieve_session()
     prepare_browser(session = nsi.session)
-    if 'nologin' not in nsi.args:
-        login()
-    sleep(0.5)
-    list_active_contests()
 
+    parse_arguments()
+
+
+def parse_arguments():
+    if len(nsi.args) == 0:
+        nsi.parser.print_help()
+        exit(0)
+    if not nsi.arg.nologin:
+        login()
+    if nsi.arg.list_contests:
+        list_active_contests()
 
 
 def login():
@@ -128,7 +143,6 @@ def list_active_contests():
 
 def main():
     init()
-    persist()
     pass
 
 if __name__ == "__main__":
