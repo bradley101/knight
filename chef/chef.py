@@ -4,6 +4,8 @@ import getpass
 import json
 import pickle
 from time import sleep
+from tabulate import tabulate
+from sys import argv
 
 class ns:
     pass
@@ -19,6 +21,7 @@ nsi.username = None
 nsi.password = None
 nsi.browser = None
 nsi.init_status = None
+nsi.args = argv[1:]
 
 
 def init():
@@ -38,9 +41,10 @@ def init():
     
     retrieve_session()
     prepare_browser(session = nsi.session)
-    login()
+    if 'nologin' not in nsi.args:
+        login()
     sleep(0.5)
-    print(nsi.browser.get_url())
+    list_active_contests()
 
 
 
@@ -99,6 +103,27 @@ def check_session_limit():
         for c in page.findAll(lambda inp: inp.name == 'input' and inp.attrs['type'] == 'checkbox' and inp.parent.find('b').text == ''):
             nsi.browser[c.attrs['name']] = c.attrs['value']
         nsi.browser.submit_selected()
+
+
+def list_active_contests():
+    header = []
+    contest_data = []
+    nsi.browser.open('https://www.codechef.com/contests')
+    sleep(0.1)
+    present = nsi.browser.get_current_page().find('table', class_='dataTable')
+    ths = present.find_all('th')
+    for th in ths:
+        header.append(th.find('a').text.strip())
+    trs = present.find('tbody').find_all('tr')
+    for tr in trs:
+        tds = tr.find_all('td')
+        _data = []
+        for td in tds:
+            _data.append(td.text.strip())
+        contest_data.append(_data)
+    
+    print(tabulate(contest_data, headers=header, tablefmt='pretty'))
+
 
 
 def main():
