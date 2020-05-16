@@ -3,6 +3,7 @@ import os.path
 import getpass
 import json
 import pickle
+from time import sleep
 
 class ns:
     pass
@@ -11,12 +12,13 @@ home_dir = os.path.expanduser('~')
 rc_file = '.chefrc'
 base_url = 'https://www.codechef.com'
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
+session_limit_url = 'https://www.codechef.com/session/limit'
 
 nsi = ns()
 nsi.username = None
 nsi.password = None
 nsi.browser = None
-nsi.init_status = nsi.browser.open(nsi.base_url)
+nsi.init_status = None
 
 
 def init():
@@ -37,31 +39,39 @@ def init():
     retrieve_session()
     prepare_browser(session = nsi.session)
     login()
+    sleep(0.5)
+    print(nsi.browser.get_url())
 
 
 
 def login():
-    if nsi.init_status.status_code != 200:
-        nsi.init_status = nsi.browser.open(nsi.base_url)
-    
-    nsi.browser.select_form('form[id="new-login-form"]')
-    nsi.browser['name'] = nsi.username
-    nsi.browser['pass'] = nsi.password
-    nsi.browser.submit_selected()
+    if not is_logged_in():
+        nsi.browser.select_form('form[id="new-login-form"]')
+        nsi.browser['name'] = nsi.username
+        nsi.browser['pass'] = nsi.password
+        nsi.browser.submit_selected()
     check_session_limit()
     return True
 
+
+def is_logged_in():
+    tmp = nsi.browser.get_current_page().findAll(text='Logout')
+    print(tmp)
+    if tmp:
+        return True
+    return False
 
 
 def prepare_browser(session = None):
     if nsi.browser == None:
         nsi.browser = ms.StatefulBrowser(session=session) if session != None else ms.StatefulBrowser()
     nsi.browser.set_user_agent(user_agent)
-    nsi.init_status = nsi.browser.open(base_url)
-    from time import sleep
-    while nsi.init_status.status_code != 200:
+    nsi.init_status = nsi.browser.open(session_limit_url)
+    
+    while nsi.init_status.status_code not in [200, 403]:
         sleep(0.5)
-        nsi.init_status = nsi.browser.open(base_url)
+        nsi.init_status = nsi.browser.open(session_limit_url)
+    # print(nsi.browser.get_url())
 
 
 def persist():
@@ -81,7 +91,14 @@ def retrieve_session():
 
 
 def check_session_limit():
-    pass
+    page = nsi.browser.get_current_page()
+    inps = page.findAll(lambda inp: inp.name == 'input' and inp.attrs['type'] == 'checkbox' and inp.parent.find('b').text == '')
+
+    if len(inps) > 0:
+        nsi.browser.select_form('form[id="session-limit-page"]')
+        for c in page.findAll(lambda inp: inp.name == 'input' and inp.attrs['type'] == 'checkbox' and inp.parent.find('b').text == ''):
+            nsi.browser[c.attrs['name']] = c.attrs['value']
+        nsi.browser.submit_selected()
 
 
 def main():
