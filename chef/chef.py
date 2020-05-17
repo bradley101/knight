@@ -1,5 +1,6 @@
 import mechanicalsoup as ms
-import os.path
+import os.path, os
+import traceback
 import getpass
 import json
 import pickle
@@ -27,10 +28,10 @@ nsi.args = argv[1:]
 parser = argparse.ArgumentParser(description="CLI Version for Codechef for dummies....")
 parser.add_argument("-n", "--nologin", help="Perform some actions without logging in", action="store_true")
 parser.add_argument("-l", "--list-contests", help="Lists all the active contests", action="store_true")
+parser.add_argument("-s", "--submit", help="Submit a solution to a problem", nargs=2, metavar=('problem_code', 'solution_location'))
 # parser.add_argument()
 nsi.arg = parser.parse_args()
 nsi.parser = parser
-
 
 def init():
     rc_file_path = os.path.join(home_dir, rc_file)
@@ -41,7 +42,7 @@ def init():
         with open(rc_file_path, 'w') as f:
             json.dump({'username': nsi.username, 'password': nsi.password}, f)
 
-        print('Username and Password changed.')
+        print('Username and Password saved.')
     else:
         with open(rc_file_path, 'r') as f:
             config = json.load(f)
@@ -57,10 +58,27 @@ def parse_arguments():
     if len(nsi.args) == 0:
         nsi.parser.print_help()
         exit(0)
-    if not nsi.arg.nologin:
-        login()
     if nsi.arg.list_contests:
         list_active_contests()
+    if nsi.arg.submit:
+        submit(*nsi.arg.submit)
+    if not nsi.arg.nologin:
+        login()
+
+
+def submit(problem_code, solution_file):
+    login()
+    solution_file_path = os.path.abspath(solution_file)
+    nsi.browser.open(base_url + '/submit/' + problem_code)
+    form = nsi.browser.select_form('form[id="problem-submission"]')
+    form.set('files[sourcefile]', solution_file_path)
+    form.set('language', '44')
+    nsi.browser.submit_selected()
+    sleep(1)
+    nsi.browser.refresh()
+    print (nsi.browser.get_url())
+    
+    pass
 
 
 def login():
@@ -149,6 +167,7 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
+        print(traceback.format_exc())
         pass
     finally:
         persist()
