@@ -26,6 +26,7 @@ log_file = os.path.join(home_dir, app_name + '.' + str(datetime.today().strftime
 base_url = 'https://www.codechef.com'
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 session_limit_url = 'https://www.codechef.com/session/limit'
+contest_url = 'https://www.codechef.com/contests'
 lang_codes = {
     '.cpp': '44',
     '.c': '11',
@@ -42,9 +43,9 @@ solution_results = {
 }
 # logging.basicConfig(filename=log_file, level=logging.INFO)
 logger = logging.getLogger(app_name)
-logger.setLevel(logging.INFO)
-log_handler = logging.FileHandler(filename=log_file)
-log_handler.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+log_handler = logging.FileHandler(filename=log_file, encoding="utf-8")
+log_handler.setLevel(logging.DEBUG)
 log_handler.setFormatter(logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s"))
 logger.addHandler(log_handler)
 
@@ -78,9 +79,16 @@ def init():
     Program initialization code. Configures the browser with the existing session and 
     parses the arguments provided during runtime
     """
+    logger.info('Parsing the arguments')
     nsi.arg = nsi.parser.parse_args()
+    logger.debug('Arg = ' + str(nsi.arg))
+    
     if len(nsi.args) == 0:
+        logger.info('No arguments provided. Printing help (-h --help)')
+        
         nsi.parser.print_help()
+
+        logger.info('Exiting program. exit code 0')
         exit(0)
 
     configure()
@@ -102,26 +110,37 @@ def configure(manual = False):
             the file (if present) or asks for new username and password
     """
 
+    logger.info('Inside configure()')
+    logger.debug('manual = ' + str(manual))
+
     rc_file_path = os.path.join(home_dir, rc_file)
     def input_u_p():
+        logger.info('Promt for credentials')
+
         nsi.username = input('Enter username: ',)
         nsi.password = getpass.getpass(prompt='Enter password: ')
 
+        logger.info('Opening rc_file for writing credentials')
         with open(rc_file_path, 'w') as f:
             json.dump({'username': nsi.username, 'password': nsi.password}, f)
+        logger.info('Credentials changed')
 
         print('Username and Password saved.')
     
     if manual:
+        logger.info('Username and password change called --config')
         input_u_p()
 
     if not manual and not os.path.isfile(rc_file_path):
+        logger.info('First time configuration')
         input_u_p()    
     elif not manual:
+        logger.info('Opening rc_file for reading credentials')
         with open(rc_file_path, 'r') as f:
             config = json.load(f)
             nsi.username, nsi.password = config['username'], config['password']
-    
+        logger.info('Reading for file successfull')
+
     nsi.is_configured = True
     pass
 
@@ -130,7 +149,9 @@ def parse_arguments():
     """
     Parses all the arguments and calls the appropriate function for the argument
     """
-    
+    logger.info('Parsing command line arguments')
+    logger.debug('Arg = ' + str(nsi.arg))
+
     if nsi.arg.list_contests:
         list_active_contests()
     if not nsi.arg.nologin:
@@ -157,19 +178,32 @@ def submit(problem_code, solution_file):
         problem_code (str): Codechef problem code
         solution_file (str): String path to the solution file
     """
+    logger.info('Inside submit()')
 
     login()
+    
     solution_file_path = os.path.abspath(solution_file)
-    nsi.browser.open(base_url + '/submit/' + problem_code)
+    logger.debug('Solution file path = ' + str(solution_file_path))
+
+    submission_url = base_url + '/submit/' + problem_code
+    _resp = nsi.browser.open(submission_url)
+    logger.debug('Opening submission url = ' + str(submission_url))
+    logger.debug('Response = ' + _resp)
+
+    logger.info('Setting form elements')
     form = nsi.browser.select_form('form[id="problem-submission"]')
     form.set('files[sourcefile]', solution_file_path)
     form.set('language', lang_codes[os.path.splitext(solution_file_path)[1]])
-    nsi.browser.submit_selected()
+    logger.debug('Final form: ' + form.print_summary())
+    _resp = nsi.browser.submit_selected()
+    logger.debug('Submission url response = ' + str(_resp))
+
     sleep(1)
+    
+    logger.info('Refresing browser')
     nsi.browser.refresh()
     print ('Successfully submited')
-
-    pass
+    logger.info('Exiting submit()')
 
 
 def print_submission_details(pc):
@@ -179,15 +213,27 @@ def print_submission_details(pc):
     Parameters:
         pc (str): Problem code
     """
+    logger.info('Inside print submission history')
+    logger.debug('Problem code = ' + str(pc))
 
     sleep(0.5)
-    nsi.browser.open(base_url + '/status/' + pc + ',' + nsi.username)
+    hist_url = base_url + '/status/' + pc + ',' + nsi.username
+    logger.debug('Opening url : ' + str(hist_url))
+
+    _resp = nsi.browser.open(hist_url)
+    
+    logger.debug('Response: ' + str(_resp))
+    logger.info('Parsing table for submission history')
+
     sub_table = nsi.browser.get_current_page().find('table', class_='dataTable')
     header = []
     data = []
     for th in sub_table.find('thead').find('tr').find_all('th'):
         header.append(th.text.strip())
     header = header[:-1]
+    
+    logger.debug('Headers = ' + str(header))
+    
     trs = sub_table.find('tbody').find_all('tr')
     for tr in trs:
         _ = []
@@ -204,8 +250,10 @@ def print_submission_details(pc):
         _ = _[:-1]
         data.append(_)
     
+    logger.debug('Table body parsed = ' + str(data))
+    logger.info('Printing table via tabulate()')
     print(tabulate(data, headers=header, tablefmt='pretty'))
-    pass
+    logger.info('Exiting print submission history')
 
 
 def login():
@@ -214,12 +262,17 @@ def login():
     Then checks if any other IP is logged in with the same username, and
     logs them out.
     """
-
+    logger.info('Inside login')
     if not is_logged_in():
-        nsi.browser.select_form('form[id="new-login-form"]')
+        logger.info('User not logged in')
+        _frm = nsi.browser.select_form('form[id="new-login-form"]')
         nsi.browser['name'] = nsi.username
         nsi.browser['pass'] = nsi.password
-        nsi.browser.submit_selected()
+        logger.info('Form credentials filled')
+        logger.debug(str(_frm.print_summary()))
+        _resp = nsi.browser.submit_selected()
+        logger.debug('Submit response: ' + str(_resp))
+
     check_session_limit()
     return True
 
@@ -228,9 +281,11 @@ def logout():
     """
     Logout the user if alredy logged in
     """
-
+    logger.info('Inside logout()')
     if is_logged_in():
-        nsi.browser.open(base_url + '/logout')
+        _resp = nsi.browser.open(base_url + '/logout')
+        logger.debug('Logout response: ' + str(_resp))
+    logger.info('Exiting logout()')
 
 
 def is_logged_in():
@@ -255,16 +310,22 @@ def prepare_browser(session = None):
     Parameters:
         session (bs4.BeautifulSoup.Session): Any existing session object to init.
     """
+    logger.info('Inside prepare browser')
+    logger.debug('Checking browser objet: ' + str(nsi.browser))
 
     if nsi.browser == None:
         nsi.browser = ms.StatefulBrowser(session=session) if session != None else ms.StatefulBrowser()
     nsi.browser.set_user_agent(user_agent)
+    logger.info('Opening session limit url')
     nsi.init_status = nsi.browser.open(session_limit_url)
-    
+    logger.debug('Response _resp = ' + str(nsi.init_status))
     while nsi.init_status.status_code not in [200, 403]:
+        logger.info('Retrying..')
         sleep(0.5)
         nsi.init_status = nsi.browser.open(session_limit_url)
-    # print(nsi.browser.get_url())
+        logger.debug('Response _resp = ' + str(nsi.init_status))
+
+    logger.info('Exiting prepare browser')
 
 
 def persist():
@@ -284,12 +345,17 @@ def retrieve_session():
     nsi.session is used to store the session object if presnet else NoneType
     """
 
+    logger.info('Inside retrieve session')
     nsi.session = None
+
+    logger.info('Checking for session file')
     if os.path.exists(os.path.join(home_dir, '.chefsession.pkl')):
+        logger.info('Reading from session file')
         with open(os.path.join(home_dir, '.chefsession.pkl'), 'rb') as f:
             nsi.session = pickle.load(f)
 
         return True
+    logger.info('Session file not found')
     return False
 
 
@@ -299,15 +365,18 @@ def check_session_limit():
     browsers. It parses the form and checks for input-type=checkbox with text other
     than 'Your current Session', checks them and submits the form to log them out
     """
-
+    logger.info('Inside check session limit')
     page = nsi.browser.get_current_page()
     inps = page.findAll(lambda inp: inp.name == 'input' and inp.attrs['type'] == 'checkbox' and inp.parent.find('b').text == '')
+    logger.debug('Logout search result: ' + str(len(inps)))
 
     if len(inps) > 0:
         nsi.browser.select_form('form[id="session-limit-page"]')
         for c in page.findAll(lambda inp: inp.name == 'input' and inp.attrs['type'] == 'checkbox' and inp.parent.find('b').text == ''):
             nsi.browser[c.attrs['name']] = c.attrs['value']
-        nsi.browser.submit_selected()
+        _resp = nsi.browser.submit_selected()
+        logger.debug('Submit response: ' + str(_resp))
+    logger.info('Exiting check session limit')
 
 
 def list_active_contests():
@@ -316,15 +385,25 @@ def list_active_contests():
     parses the table to extract contest details and stores them in a list and uses the
     tabulate library to print it in table format
     """
-
+    logger.info('Inside list active contests')
     header = []
     contest_data = []
-    nsi.browser.open('https://www.codechef.com/contests')
+    
+    logger.info('Opening contest url: ' + contest_url)
+    _resp = nsi.browser.open(contest_url)
+    logger.debug('Response _resp = ' + str(_resp))
+
     sleep(0.1)
+
+    logger.info('Parsing the contest table')
     present = nsi.browser.get_current_page().find('table', class_='dataTable')
     ths = present.find_all('th')
     for th in ths:
         header.append(th.find('a').text.strip())
+    
+    logger.info('Headers parsed')
+    logger.debug('Headers = ' + str(header))
+
     trs = present.find('tbody').find_all('tr')
     for tr in trs:
         tds = tr.find_all('td')
@@ -333,7 +412,11 @@ def list_active_contests():
             _data.append(td.text.strip())
         contest_data.append(_data)
     
+    logger.info('Table body parsed')
+    logger.debug('Table body: ' + str(contest_data))
+    logger.info('Priting table via tabulate()')
     print(tabulate(contest_data, headers=header, tablefmt='pretty'))
+    logger.info('Exiting list active contests')
 
 
 
@@ -341,9 +424,18 @@ def main():
     """
     Entry point for the program. And calls the init function for the initialization
     """
+    logger.info('In main()')
     logger.info('Calling init()')
+
     init()
+    
     logger.info('Finished executing init()')
+
+    with open(log_file, 'a') as f:
+        f.write('-' * 100)
+        f.write('\n')
+
+    
     pass
 
 if __name__ == "__main__":
@@ -354,4 +446,4 @@ if __name__ == "__main__":
         pass
     finally:
         persist()
-        logging
+
