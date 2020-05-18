@@ -6,6 +6,7 @@ import json
 import pickle
 import argparse
 import logging
+from datetime import datetime
 from time import sleep
 from tabulate import tabulate
 from sys import argv, exit
@@ -17,8 +18,11 @@ class ns:
 Defining the constants here
 """
 
+app_name = 'chef'
 home_dir = os.path.expanduser('~')
 rc_file = '.chefrc'
+log_conf_file = os.path.join(home_dir, 'log.conf')
+log_file = os.path.join(home_dir, app_name + '.' + str(datetime.today().strftime("%Y-%m-%d")) + '.log')
 base_url = 'https://www.codechef.com'
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 session_limit_url = 'https://www.codechef.com/session/limit'
@@ -36,6 +40,13 @@ solution_results = {
     'time limit exceeded': 'Time Limit Exceeded',
     'accepted': 'Accepted'
 }
+# logging.basicConfig(filename=log_file, level=logging.INFO)
+logger = logging.getLogger(app_name)
+logger.setLevel(logging.INFO)
+log_handler = logging.FileHandler(filename=log_file)
+log_handler.setLevel(logging.INFO)
+log_handler.setFormatter(logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(funcName)s - %(message)s"))
+logger.addHandler(log_handler)
 
 """
 Adding global variables to a namespace so it can be used and changed inside functions
@@ -60,7 +71,6 @@ parser.add_argument("-u", "--user", help="Get current logged in user", action="s
 parser.add_argument("--config", help="Configure and change username and password", action="store_true")
 parser.add_argument("--logout", help="Logout current user", action="store_true")
 # parser.add_argument()
-nsi.arg = parser.parse_args()
 nsi.parser = parser
 
 def init():
@@ -68,7 +78,7 @@ def init():
     Program initialization code. Configures the browser with the existing session and 
     parses the arguments provided during runtime
     """
-
+    nsi.arg = nsi.parser.parse_args()
     if len(nsi.args) == 0:
         nsi.parser.print_help()
         exit(0)
@@ -331,8 +341,9 @@ def main():
     """
     Entry point for the program. And calls the init function for the initialization
     """
-    
+    logger.info('Calling init()')
     init()
+    logger.info('Finished executing init()')
     pass
 
 if __name__ == "__main__":
@@ -343,3 +354,4 @@ if __name__ == "__main__":
         pass
     finally:
         persist()
+        logging
