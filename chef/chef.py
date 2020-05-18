@@ -5,12 +5,17 @@ import getpass
 import json
 import pickle
 import argparse
+import logging
 from time import sleep
 from tabulate import tabulate
 from sys import argv, exit
 
 class ns:
     pass
+
+"""
+Defining the constants here
+"""
 
 home_dir = os.path.expanduser('~')
 rc_file = '.chefrc'
@@ -32,6 +37,9 @@ solution_results = {
     'accepted': 'Accepted'
 }
 
+"""
+Adding global variables to a namespace so it can be used and changed inside functions
+"""
 nsi = ns()
 nsi.username = None
 nsi.password = None
@@ -40,6 +48,9 @@ nsi.init_status = None
 nsi.args = argv[1:]
 nsi.is_configured = False
 
+"""
+Defining our argument parser
+"""
 parser = argparse.ArgumentParser(description="CLI Version for Codechef for dummies....")
 parser.add_argument("-n", "--nologin", help="Perform some actions without logging in", action="store_true")
 parser.add_argument("-l", "--list-contests", help="Lists all the active contests", action="store_true")
@@ -47,12 +58,17 @@ parser.add_argument("-s", "--submit", help="Submit a solution to a problem", nar
 parser.add_argument("--history", help="List Submission history for a problem", nargs=1, metavar=('problem_code'))
 parser.add_argument("-u", "--user", help="Get current logged in user", action="store_true")
 parser.add_argument("--config", help="Configure and change username and password", action="store_true")
-parser.add_argument("--logout", help="Logout current user")
+parser.add_argument("--logout", help="Logout current user", action="store_true")
 # parser.add_argument()
 nsi.arg = parser.parse_args()
 nsi.parser = parser
 
 def init():
+    """
+    Program initialization code. Configures the browser with the existing session and 
+    parses the arguments provided during runtime
+    """
+
     if len(nsi.args) == 0:
         nsi.parser.print_help()
         exit(0)
@@ -65,6 +81,17 @@ def init():
 
 
 def configure(manual = False):
+    """
+    Configures our program with Codechef username and password and stores them in a 
+    JSON file in home dir
+
+    Parameters:
+        manual (boolean): If true, program asks for username and password and changes
+            the existing one.
+            If false (default), program loads the existing username and password from
+            the file (if present) or asks for new username and password
+    """
+
     rc_file_path = os.path.join(home_dir, rc_file)
     def input_u_p():
         nsi.username = input('Enter username: ',)
@@ -90,6 +117,10 @@ def configure(manual = False):
 
 
 def parse_arguments():
+    """
+    Parses all the arguments and calls the appropriate function for the argument
+    """
+    
     if nsi.arg.list_contests:
         list_active_contests()
     if not nsi.arg.nologin:
@@ -109,6 +140,14 @@ def parse_arguments():
 
 
 def submit(problem_code, solution_file):
+    """
+    Submits a solution to Codechef to a Problem.
+
+    Parameters:
+        problem_code (str): Codechef problem code
+        solution_file (str): String path to the solution file
+    """
+
     login()
     solution_file_path = os.path.abspath(solution_file)
     nsi.browser.open(base_url + '/submit/' + problem_code)
@@ -124,6 +163,13 @@ def submit(problem_code, solution_file):
 
 
 def print_submission_details(pc):
+    """
+    Prints the submission history for a given problem code in Tabular format
+
+    Parameters:
+        pc (str): Problem code
+    """
+
     sleep(0.5)
     nsi.browser.open(base_url + '/status/' + pc + ',' + nsi.username)
     sub_table = nsi.browser.get_current_page().find('table', class_='dataTable')
@@ -153,6 +199,12 @@ def print_submission_details(pc):
 
 
 def login():
+    """
+    Logs in the user with username and password if already not logged in.
+    Then checks if any other IP is logged in with the same username, and
+    logs them out.
+    """
+
     if not is_logged_in():
         nsi.browser.select_form('form[id="new-login-form"]')
         nsi.browser['name'] = nsi.username
@@ -163,11 +215,21 @@ def login():
 
 
 def logout():
+    """
+    Logout the user if alredy logged in
+    """
+
     if is_logged_in():
         nsi.browser.open(base_url + '/logout')
 
 
 def is_logged_in():
+    """
+    Checks if the user is already logged in in the previous session
+    It find the HTML document for the word 'Logout' and if present,
+    the user is logged in, else not
+    """
+
     tmp = nsi.browser.get_current_page().findAll(text='Logout')
     # print(tmp)
     if tmp:
@@ -176,6 +238,14 @@ def is_logged_in():
 
 
 def prepare_browser(session = None):
+    """
+    Initialises the browser with existing session (if present).
+    Then opens the session limit page to check for existing logged in sessions.
+
+    Parameters:
+        session (bs4.BeautifulSoup.Session): Any existing session object to init.
+    """
+
     if nsi.browser == None:
         nsi.browser = ms.StatefulBrowser(session=session) if session != None else ms.StatefulBrowser()
     nsi.browser.set_user_agent(user_agent)
@@ -188,6 +258,10 @@ def prepare_browser(session = None):
 
 
 def persist():
+    """
+    Saves the browser session to a local file in home directory for later use.
+    """
+
     if nsi.browser:
         with open(os.path.join(home_dir, '.chefsession.pkl'), 'wb') as f:
             pickle.dump(nsi.browser.session, f)
@@ -195,6 +269,11 @@ def persist():
 
 
 def retrieve_session():
+    """
+    Loads the session object from the session file (if present)
+    nsi.session is used to store the session object if presnet else NoneType
+    """
+
     nsi.session = None
     if os.path.exists(os.path.join(home_dir, '.chefsession.pkl')):
         with open(os.path.join(home_dir, '.chefsession.pkl'), 'rb') as f:
@@ -205,6 +284,12 @@ def retrieve_session():
 
 
 def check_session_limit():
+    """
+    Checks if the same user is logged in with some other session in some other 
+    browsers. It parses the form and checks for input-type=checkbox with text other
+    than 'Your current Session', checks them and submits the form to log them out
+    """
+
     page = nsi.browser.get_current_page()
     inps = page.findAll(lambda inp: inp.name == 'input' and inp.attrs['type'] == 'checkbox' and inp.parent.find('b').text == '')
 
@@ -216,6 +301,12 @@ def check_session_limit():
 
 
 def list_active_contests():
+    """
+    Prints the active contests data in Tabular format. It visits the contest page and
+    parses the table to extract contest details and stores them in a list and uses the
+    tabulate library to print it in table format
+    """
+
     header = []
     contest_data = []
     nsi.browser.open('https://www.codechef.com/contests')
@@ -237,6 +328,10 @@ def list_active_contests():
 
 
 def main():
+    """
+    Entry point for the program. And calls the init function for the initialization
+    """
+    
     init()
     pass
 
