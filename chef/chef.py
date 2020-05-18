@@ -38,19 +38,35 @@ nsi.password = None
 nsi.browser = None
 nsi.init_status = None
 nsi.args = argv[1:]
+nsi.is_configured = False
 
 parser = argparse.ArgumentParser(description="CLI Version for Codechef for dummies....")
 parser.add_argument("-n", "--nologin", help="Perform some actions without logging in", action="store_true")
 parser.add_argument("-l", "--list-contests", help="Lists all the active contests", action="store_true")
 parser.add_argument("-s", "--submit", help="Submit a solution to a problem", nargs=2, metavar=('problem_code', 'solution_location'))
 parser.add_argument("--history", help="List Submission history for a problem", nargs=1, metavar=('problem_code'))
+parser.add_argument("-u", "--user", help="Get current logged in user", action="store_true")
+parser.add_argument("--config", help="Configure and change username and password", action="store_true")
+parser.add_argument("--logout", help="Logout current user")
 # parser.add_argument()
 nsi.arg = parser.parse_args()
 nsi.parser = parser
 
 def init():
+    if len(nsi.args) == 0:
+        nsi.parser.print_help()
+        exit(0)
+
+    configure()
+    retrieve_session()
+    prepare_browser(session = nsi.session)
+
+    parse_arguments()
+
+
+def configure(manual = False):
     rc_file_path = os.path.join(home_dir, rc_file)
-    if not os.path.isfile(rc_file_path):
+    def input_u_p():
         nsi.username = input('Enter username: ',)
         nsi.password = getpass.getpass(prompt='Enter password: ')
 
@@ -58,27 +74,34 @@ def init():
             json.dump({'username': nsi.username, 'password': nsi.password}, f)
 
         print('Username and Password saved.')
-    else:
+    
+    if manual:
+        input_u_p()
+
+    if not manual and not os.path.isfile(rc_file_path):
+        input_u_p()    
+    elif not manual:
         with open(rc_file_path, 'r') as f:
             config = json.load(f)
             nsi.username, nsi.password = config['username'], config['password']
     
-    retrieve_session()
-    prepare_browser(session = nsi.session)
-
-    parse_arguments()
+    nsi.is_configured = True
+    pass
 
 
 def parse_arguments():
-    if len(nsi.args) == 0:
-        nsi.parser.print_help()
-        exit(0)
     if nsi.arg.list_contests:
         list_active_contests()
     if not nsi.arg.nologin:
         login()
     if nsi.arg.history:
         print_submission_details(*nsi.arg.history)
+    if nsi.arg.logout:
+        logout()
+    if nsi.arg.user:
+        print('Username: ' + nsi.username)
+    if nsi.arg.config:
+        configure(manual=True)
     if nsi.arg.submit:
         submit(*nsi.arg.submit)
         print_submission_details(nsi.arg.submit[0])
@@ -108,7 +131,7 @@ def print_submission_details(pc):
     data = []
     for th in sub_table.find('thead').find('tr').find_all('th'):
         header.append(th.text.strip())
-    # header = header[:-1]
+    header = header[:-1]
     trs = sub_table.find('tbody').find_all('tr')
     for tr in trs:
         _ = []
@@ -122,7 +145,7 @@ def print_submission_details(pc):
                     _.append(''.join([str(__) for __ in rs_span.find_all(text=True, recursive=False)]))
             else:
                 _.append(td.text.strip())
-        # _ = _[:-1]
+        _ = _[:-1]
         data.append(_)
     
     print(tabulate(data, headers=header, tablefmt='pretty'))
@@ -137,6 +160,11 @@ def login():
         nsi.browser.submit_selected()
     check_session_limit()
     return True
+
+
+def logout():
+    if is_logged_in():
+        nsi.browser.open(base_url + '/logout')
 
 
 def is_logged_in():
@@ -160,9 +188,10 @@ def prepare_browser(session = None):
 
 
 def persist():
-    with open(os.path.join(home_dir, '.chefsession.pkl'), 'wb') as f:
-        pickle.dump(nsi.browser.session, f)
-    return True
+    if nsi.browser:
+        with open(os.path.join(home_dir, '.chefsession.pkl'), 'wb') as f:
+            pickle.dump(nsi.browser.session, f)
+        return True
 
 
 def retrieve_session():
