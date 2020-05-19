@@ -1,4 +1,5 @@
 ![enter image description here](https://github.com/bradley101/knight/raw/master/knight.jpg)
+
 Knight is a command line utility for doing basic CodeChef operations like problem submission, history, etc.
 ## Parameters & Usage
 
