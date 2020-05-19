@@ -18,11 +18,15 @@ class ns:
 Defining the constants here
 """
 
-app_name = 'chef'
+app_name = 'knight'
 home_dir = os.path.expanduser('~')
-rc_file = '.chefrc'
+if os.path.exists(os.path.join(home_dir, '.' + app_name)):
+    os.makedirs(os.path.join(home_dir, '.' + app_name, 'logs'))
+home_dir = os.path.join(home_dir, '.' + app_name)
+rc_file = '.knightrc'
 log_conf_file = os.path.join(home_dir, 'log.conf')
-log_file = os.path.join(home_dir, app_name + '.' + str(datetime.today().strftime("%Y-%m-%d")) + '.log')
+log_file = os.path.join(home_dir, 'logs', app_name + '.' + str(datetime.today().strftime("%Y-%m-%d")) + '.log')
+session_file = '.' + app_name + '.session.pkl'
 base_url = 'https://www.codechef.com'
 user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 session_limit_url = 'https://www.codechef.com/session/limit'
@@ -334,7 +338,7 @@ def persist():
     """
 
     if nsi.browser:
-        with open(os.path.join(home_dir, '.chefsession.pkl'), 'wb') as f:
+        with open(os.path.join(home_dir, session_file), 'wb') as f:
             pickle.dump(nsi.browser.session, f)
         return True
 
@@ -349,9 +353,9 @@ def retrieve_session():
     nsi.session = None
 
     logger.info('Checking for session file')
-    if os.path.exists(os.path.join(home_dir, '.chefsession.pkl')):
+    if os.path.exists(os.path.join(home_dir, session_file)):
         logger.info('Reading from session file')
-        with open(os.path.join(home_dir, '.chefsession.pkl'), 'rb') as f:
+        with open(os.path.join(home_dir, session_file), 'rb') as f:
             nsi.session = pickle.load(f)
 
         return True
