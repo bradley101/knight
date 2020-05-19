@@ -20,7 +20,7 @@ Defining the constants here
 
 app_name = 'knight'
 home_dir = os.path.expanduser('~')
-if os.path.exists(os.path.join(home_dir, '.' + app_name)):
+if not os.path.exists(os.path.join(home_dir, '.' + app_name)):
     os.makedirs(os.path.join(home_dir, '.' + app_name, 'logs'))
 home_dir = os.path.join(home_dir, '.' + app_name)
 rc_file = '.knightrc'
@@ -273,7 +273,7 @@ def login():
         nsi.browser['name'] = nsi.username
         nsi.browser['pass'] = nsi.password
         logger.info('Form credentials filled')
-        logger.debug(str(_frm.print_summary()))
+        # logger.debug(str(_frm.print_summary()))
         _resp = nsi.browser.submit_selected()
         logger.debug('Submit response: ' + str(_resp))
 
