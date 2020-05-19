@@ -1,0 +1,12 @@
+Metadata-Version: 1.2
+Name: knight
+Version: 0.1.0
+Summary: CLI version of Codechef for dummies...
+Home-page: https://github.com/bradley101/knight
+Author: Shantanu Banerjee
+Author-email: hi@shantanubanerjee.com
+License: MIT
+Description: UNKNOWN
+Keywords: codechef competetive-programming coding cli
+Platform: UNKNOWN
+Requires-Python: >=3
