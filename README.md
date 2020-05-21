@@ -1,6 +1,8 @@
+
 ![enter image description here](https://github.com/bradley101/knight/raw/master/knight.jpg)
-Knight is a command line utility for doing basic CodeChef operations like problem submission, history, etc.
-## Parameters & Usage
+
+Knight is a command line utility for doing basic CodeChef operations like problem submission, history, etc directly from the terminal. Trust me it helps 😀
+# Parameters & Usage
 
     usage: knight [-h] [-n] [-l] [-s problem_code solution_location] [--history problem_code] [-u] [--config] [--logout]
 
@@ -13,28 +15,32 @@ Knight is a command line utility for doing basic CodeChef operations like proble
  - `--logout` - Logs out the configured user on Codechef (if logged in)
 
 Note: **Knight** uses sessions  so your previous login session is saved for later use.
-## Installation
+
+
+
+# Installation
 
  - Linux & Unix systems - `$ pip install knight --upgrade`
  - Windows - `pip install knight --upgrade`
  
  For Windows users, you need to add installation directory to `PATH`. At the end of the installation, you'll be notified by a warning with a location/directory. Copy that location and add it to system's `PATH` variable.
- ## Requirements
+ # Requirements
  
  - Python 3.x
  
- ## Issues
+ # Issues
  In case of some error  or exceptions, please find the log files under `HOME_DIR/.knight/logs/` and submit an issue on Github with the logs.
  It will really be of great help improving the user experience.
  
- ## How to Contribute
+ # How to Contribute
  
- - Clone the repo https://github.com/bradley101/knight.git to empty directory.
+ - Fork the repo.
+ - Clone the repo `https://github.com/<your username>/knight.git` to empty directory.
 	 
     ```
     mkdir knight
     cd knight
-    git clone https://github.com/bradley101/knight.git
+    git clone https://github.com/<your username>/knight.git
     ```
     
  - Create a new branch for your changes.
@@ -43,8 +49,8 @@ Note: **Knight** uses sessions  so your previous login session is saved for late
 	 git checkout my_branch
 	 ```
 	 
- - Commit your changes and Submit Pull Request to `master` branch with description and comments
-### Testing
+ - Commit your changes and Submit Pull Request to `master` branch of parent project with description and comments
+## Testing
 Run the knight.py file with requried parameters and arguments that work on your changes.
 ```
 [Inside project root]
