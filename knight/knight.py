@@ -122,7 +122,15 @@ def configure(manual = False):
         logger.info('Promt for credentials')
 
         nsi.username = input('Enter username: ',)
-        nsi.password = getpass.getpass(prompt='Enter password: ')
+        def prompt_pwd():
+            nsi.password = getpass.getpass(prompt='Enter password: ')
+            nsi.repassword = getpass.getpass(prompt='Re enter password: ')
+            return nsi.password == nsi.repassword
+        while not prompt_pwd():
+            logger.info('Incorrect password entered')
+            print('Passwords did not match. Please retry')
+            pass
+        
 
         logger.info('Opening rc_file for writing credentials')
         with open(rc_file_path, 'w') as f:
