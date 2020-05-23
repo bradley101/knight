@@ -6,6 +6,7 @@ import json
 import pickle
 import argparse
 import logging
+import re
 from datetime import datetime
 from time import sleep
 from tabulate import tabulate
@@ -164,21 +165,22 @@ def parse_arguments():
     logger.info('Parsing command line arguments')
     logger.debug('Arg = ' + str(nsi.arg))
 
-    if nsi.arg.list_contests:
-        list_active_contests()
-    if not nsi.arg.nologin:
-        login()
-    if nsi.arg.history:
-        print_submission_details(*nsi.arg.history)
-    if nsi.arg.logout:
-        logout()
-    if nsi.arg.user:
-        print('Username: ' + nsi.username)
     if nsi.arg.config:
         configure(manual=True)
-    if nsi.arg.submit:
-        submit(*nsi.arg.submit)
-        print_submission_details(nsi.arg.submit[0])
+    else:
+        if nsi.arg.list_contests:
+            list_active_contests()
+        if not nsi.arg.nologin:
+            login()
+        if nsi.arg.user:
+            print('Username: ' + nsi.username)
+        if nsi.arg.submit:
+            submit(*nsi.arg.submit)
+            print_submission_details(nsi.arg.submit[0])
+        if nsi.arg.logout:
+            logout()
+        if nsi.arg.history:
+            print_submission_details(*nsi.arg.history)
     
 
 
@@ -284,6 +286,12 @@ def login():
         # logger.debug(str(_frm.print_summary()))
         _resp = nsi.browser.submit_selected()
         logger.debug('Submit response: ' + str(_resp))
+        _resp = nsi.browser.get_current_page().find(string = re.compile('Sorry'))
+        logger.debug('Login failed check response: ' + str(_resp))
+        if _resp is not None:
+            print('Username or Password incorrect. Please use --config option to reset username and password')
+            logger.info('Login failed')
+            raise Exception("Login failed")
 
     check_session_limit()
     return True
@@ -439,7 +447,12 @@ def main():
     logger.info('In main()')
     logger.info('Calling init()')
 
-    init()
+    try:
+        init()
+    except Exception:
+        logger.exception(traceback.format_exc())
+    finally:
+        persist()
     
     logger.info('Finished executing init()')
 
