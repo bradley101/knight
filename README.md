@@ -1,15 +1,18 @@
 
 ![enter image description here](https://github.com/bradley101/knight/raw/master/knight.jpg)
 
+
 Knight is a command line utility for doing basic CodeChef operations like problem submission, history, etc directly from the terminal. Trust me it helps 😀
 # Parameters & Usage
 
-    usage: knight [-h] [-n] [-l] [-s problem_code solution_location] [--history problem_code] [-u] [--config] [--logout]
+    usage: knight [-h] [-n] [-l] [--select-contest contest_code] [--reset-contest] [-s problem_code solution_location] [--history problem_code] [-u] [--config] [--logout]
 
  - `-h or --help` - Displays the standard help on usage and parameters
  - `-n or --nologin` - Performs certain operations that don't require you to log in (currently only `-l or --list-contests`)
- - `-s <problem code> <solution file> or  --submit <problem code> <solution file>` - Submit your solution file to the specified problem code.
- - `--history <problem code>` - Display your submission history for that problem in a prettier tabular format.
+ - `--select-contest <contest_code>` - Change the contest to the current ongoing `contest_code`
+ - `--reset-contest` - Change the contest to PRACTISE mode
+ - `-s <problem code> <solution file> or  --submit <problem code> <solution file>` - Submit your solution file to the specified problem code. **Change the contest to submit to an ongoing contest**.
+ - `--history <problem code>` - Display your submission history for that problem in a prettier tabular format. **Change the contest to submit to an ongoing contest**
  - `-u or --user` - Display the currently configured user on **Knight**.
  - `--config` - Set another username and password for logging into Codechef.
  - `--logout` - Logs out the configured user on Codechef (if logged in)
