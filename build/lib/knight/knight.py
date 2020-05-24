@@ -6,6 +6,7 @@ import json
 import pickle
 import argparse
 import logging
+import re
 from datetime import datetime
 from time import sleep
 from tabulate import tabulate
@@ -63,6 +64,8 @@ nsi.browser = None
 nsi.init_status = None
 nsi.args = argv[1:]
 nsi.is_configured = False
+nsi.submission_url = base_url + '/submit'
+nsi.contest = ''
 
 """
 Defining our argument parser
@@ -70,6 +73,8 @@ Defining our argument parser
 parser = argparse.ArgumentParser(description="CLI Version for Codechef for dummies....")
 parser.add_argument("-n", "--nologin", help="Perform some actions without logging in", action="store_true")
 parser.add_argument("-l", "--list-contests", help="Lists all the active contests", action="store_true")
+parser.add_argument("--select-contest", help="Select a contest for submissions", nargs=1, metavar=('contest_code'))
+parser.add_argument("--reset-contest", help="Change contest to PRACTISE mode", action="store_true")
 parser.add_argument("-s", "--submit", help="Submit a solution to a problem", nargs=2, metavar=('problem_code', 'solution_location'))
 parser.add_argument("--history", help="List Submission history for a problem", nargs=1, metavar=('problem_code'))
 parser.add_argument("-u", "--user", help="Get current logged in user", action="store_true")
@@ -122,11 +127,24 @@ def configure(manual = False):
         logger.info('Promt for credentials')
 
         nsi.username = input('Enter username: ',)
-        nsi.password = getpass.getpass(prompt='Enter password: ')
+        def prompt_pwd():
+            nsi.password = getpass.getpass(prompt='Enter password: ')
+            nsi.repassword = getpass.getpass(prompt='Re enter password: ')
+            return nsi.password == nsi.repassword
+        while not prompt_pwd():
+            logger.info('Incorrect password entered')
+            print('Passwords did not match. Please retry')
+            pass
+        
 
         logger.info('Opening rc_file for writing credentials')
-        with open(rc_file_path, 'w') as f:
-            json.dump({'username': nsi.username, 'password': nsi.password}, f)
+        with open(rc_file_path, 'r+') as f:
+            _ = json.load(f)
+            f.seek(0, 0)
+            if 'contest' in _:
+                nsi.contest = _['contest']
+            f.truncate()
+            json.dump({'username': nsi.username, 'password': nsi.password, 'contest': nsi.contest}, f)
         logger.info('Credentials changed')
 
         print('Username and Password saved.')
@@ -143,9 +161,15 @@ def configure(manual = False):
         with open(rc_file_path, 'r') as f:
             config = json.load(f)
             nsi.username, nsi.password = config['username'], config['password']
+            if 'contest' in config:
+                nsi.contest = config['contest']
+            else:
+                nsi.contest = ''
+
         logger.info('Reading for file successfull')
 
     nsi.is_configured = True
+    change_contest(contest = nsi.contest)
     pass
 
 
@@ -156,22 +180,45 @@ def parse_arguments():
     logger.info('Parsing command line arguments')
     logger.debug('Arg = ' + str(nsi.arg))
 
-    if nsi.arg.list_contests:
-        list_active_contests()
-    if not nsi.arg.nologin:
-        login()
-    if nsi.arg.history:
-        print_submission_details(*nsi.arg.history)
-    if nsi.arg.logout:
-        logout()
-    if nsi.arg.user:
-        print('Username: ' + nsi.username)
     if nsi.arg.config:
         configure(manual=True)
-    if nsi.arg.submit:
-        submit(*nsi.arg.submit)
-        print_submission_details(nsi.arg.submit[0])
+    else:
+        if nsi.arg.list_contests:
+            list_active_contests()
+        if nsi.arg.select_contest:
+            change_contest(contest = nsi.arg.select_contest[0])
+        if nsi.arg.reset_contest:
+            change_contest(contest = '')
+        if not nsi.arg.nologin:
+            login()
+        if nsi.arg.user:
+            print('Username: ' + nsi.username)
+        if nsi.arg.submit:
+            submit(*nsi.arg.submit)
+            print_submission_details(nsi.arg.submit[0])
+        if nsi.arg.logout:
+            logout()
+        if nsi.arg.history:
+            print_submission_details(*nsi.arg.history)
     
+
+def change_contest(contest = ''):
+    logger.info('Insie change contest')
+    logger.debug('change_code = {}'.format(str(contest)))
+
+    if contest != '':
+        nsi.submission_url = base_url + '/{}/submit'.format(contest)
+        nsi.contest = contest
+    else:
+        nsi.submission_url = base_url + '/submit'.format(contest)
+        nsi.contest = contest
+
+    with open(os.path.join(home_dir, rc_file), 'r+') as f:
+        _ = json.load(f)
+        f.seek(0, 0)
+        f.truncate()
+        json.dump({'username': _['username'], 'password': _['password'], 'contest': nsi.contest}, f)
+    logger.info('exiting change contest')
 
 
 def submit(problem_code, solution_file):
@@ -189,16 +236,16 @@ def submit(problem_code, solution_file):
     solution_file_path = os.path.abspath(solution_file)
     logger.debug('Solution file path = ' + str(solution_file_path))
 
-    submission_url = base_url + '/submit/' + problem_code
+    submission_url = nsi.submission_url + '/' + problem_code
     _resp = nsi.browser.open(submission_url)
     logger.debug('Opening submission url = ' + str(submission_url))
-    logger.debug('Response = ' + _resp)
+    logger.debug('Response = ' + str(_resp))
 
     logger.info('Setting form elements')
     form = nsi.browser.select_form('form[id="problem-submission"]')
     form.set('files[sourcefile]', solution_file_path)
     form.set('language', lang_codes[os.path.splitext(solution_file_path)[1]])
-    logger.debug('Final form: ' + form.print_summary())
+    # logger.debug('Final form: ' + str(form.print_summary()))
     _resp = nsi.browser.submit_selected()
     logger.debug('Submission url response = ' + str(_resp))
 
@@ -221,7 +268,10 @@ def print_submission_details(pc):
     logger.debug('Problem code = ' + str(pc))
 
     sleep(0.5)
-    hist_url = base_url + '/status/' + pc + ',' + nsi.username
+    if nsi.contest == '':
+        hist_url = base_url + '/status/' + pc + ',' + nsi.username
+    else:
+        hist_url = base_url + '/{}/status/{},{}'.format(nsi.contest, pc, nsi.username)
     logger.debug('Opening url : ' + str(hist_url))
 
     _resp = nsi.browser.open(hist_url)
@@ -276,6 +326,12 @@ def login():
         # logger.debug(str(_frm.print_summary()))
         _resp = nsi.browser.submit_selected()
         logger.debug('Submit response: ' + str(_resp))
+        _resp = nsi.browser.get_current_page().find(string = re.compile('Sorry'))
+        logger.debug('Login failed check response: ' + str(_resp))
+        if _resp is not None:
+            print('Username or Password incorrect. Please use --config option to reset username and password')
+            logger.info('Login failed')
+            raise Exception("Login failed")
 
     check_session_limit()
     return True
@@ -431,7 +487,12 @@ def main():
     logger.info('In main()')
     logger.info('Calling init()')
 
-    init()
+    try:
+        init()
+    except Exception:
+        logger.exception(traceback.format_exc())
+    finally:
+        persist()
     
     logger.info('Finished executing init()')
 
