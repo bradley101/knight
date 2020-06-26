@@ -138,9 +138,9 @@ def configure(manual = False):
         
 
         logger.info('Opening rc_file for writing credentials')
-        with open(rc_file_path, 'r+') as f:
-            _ = json.load(f)
+        with open(rc_file_path, 'a+') as f:
             f.seek(0, 0)
+            _ = json.load(f)
             if 'contest' in _:
                 nsi.contest = _['contest']
             f.truncate()
@@ -213,9 +213,9 @@ def change_contest(contest = ''):
         nsi.submission_url = base_url + '/submit'.format(contest)
         nsi.contest = contest
 
-    with open(os.path.join(home_dir, rc_file), 'r+') as f:
-        _ = json.load(f)
+    with open(os.path.join(home_dir, rc_file), 'a+') as f:
         f.seek(0, 0)
+        _ = json.load(f)
         f.truncate()
         json.dump({'username': _['username'], 'password': _['password'], 'contest': nsi.contest}, f)
     logger.info('exiting change contest')

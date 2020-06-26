@@ -1,0 +1,92 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+__version__	build/lib/knight/__init__.py	/^__version__ = '1.1.2'/;"	v
+__version__	knight/__init__.py	/^__version__ = '1.1.2'/;"	v
+app_name	build/lib/knight/knight.py	/^app_name = 'knight'$/;"	v
+app_name	knight/knight.py	/^app_name = 'knight'$/;"	v
+author	setup.py	/^	author = 'Shantanu Banerjee',$/;"	v
+author_email	setup.py	/^	author_email = "hi@shantanubanerjee.com",$/;"	v
+base_url	build/lib/knight/knight.py	/^base_url = 'https:\/\/www.codechef.com'$/;"	v
+base_url	knight/knight.py	/^base_url = 'https:\/\/www.codechef.com'$/;"	v
+change_contest	build/lib/knight/knight.py	/^def change_contest(contest = ''):$/;"	f
+change_contest	knight/knight.py	/^def change_contest(contest = ''):$/;"	f
+check_session_limit	build/lib/knight/knight.py	/^def check_session_limit():$/;"	f
+check_session_limit	knight/knight.py	/^def check_session_limit():$/;"	f
+configure	build/lib/knight/knight.py	/^def configure(manual = False):$/;"	f
+configure	knight/knight.py	/^def configure(manual = False):$/;"	f
+contest_url	build/lib/knight/knight.py	/^contest_url = 'https:\/\/www.codechef.com\/contests'$/;"	v
+contest_url	knight/knight.py	/^contest_url = 'https:\/\/www.codechef.com\/contests'$/;"	v
+description	setup.py	/^	description = 'CLI version of Codechef for dummies...',$/;"	v
+entry_points	setup.py	/^	entry_points={$/;"	v
+home_dir	build/lib/knight/knight.py	/^home_dir = os.path.expanduser('~')$/;"	v
+home_dir	build/lib/knight/knight.py	/^home_dir = os.path.join(home_dir, '.' + app_name)$/;"	v
+home_dir	knight/knight.py	/^home_dir = os.path.expanduser('~')$/;"	v
+home_dir	knight/knight.py	/^home_dir = os.path.join(home_dir, '.' + app_name)$/;"	v
+init	build/lib/knight/knight.py	/^def init():$/;"	f
+init	knight/knight.py	/^def init():$/;"	f
+input_u_p	build/lib/knight/knight.py	/^    def input_u_p():$/;"	f	function:configure
+input_u_p	knight/knight.py	/^    def input_u_p():$/;"	f	function:configure
+install_requires	setup.py	/^    install_requires = ['mechanicalsoup', 'tabulate'],$/;"	v
+is_logged_in	build/lib/knight/knight.py	/^def is_logged_in():$/;"	f
+is_logged_in	knight/knight.py	/^def is_logged_in():$/;"	f
+keywords	setup.py	/^    keywords = 'codechef competetive-programming coding cli',$/;"	v
+lang_codes	build/lib/knight/knight.py	/^lang_codes = {$/;"	v
+lang_codes	knight/knight.py	/^lang_codes = {$/;"	v
+license	setup.py	/^	license = 'MIT',$/;"	v
+list_active_contests	build/lib/knight/knight.py	/^def list_active_contests():$/;"	f
+list_active_contests	knight/knight.py	/^def list_active_contests():$/;"	f
+log_conf_file	build/lib/knight/knight.py	/^log_conf_file = os.path.join(home_dir, 'log.conf')$/;"	v
+log_conf_file	knight/knight.py	/^log_conf_file = os.path.join(home_dir, 'log.conf')$/;"	v
+log_file	build/lib/knight/knight.py	/^log_file = os.path.join(home_dir, 'logs', app_name + '.' + str(datetime.today().strftime("%Y-%m-%d")) + '.log')$/;"	v
+log_file	knight/knight.py	/^log_file = os.path.join(home_dir, 'logs', app_name + '.' + str(datetime.today().strftime("%Y-%m-%d")) + '.log')$/;"	v
+log_handler	build/lib/knight/knight.py	/^log_handler = logging.FileHandler(filename=log_file, encoding="utf-8")$/;"	v
+log_handler	knight/knight.py	/^log_handler = logging.FileHandler(filename=log_file, encoding="utf-8")$/;"	v
+logger	build/lib/knight/knight.py	/^logger = logging.getLogger(app_name)$/;"	v
+logger	knight/knight.py	/^logger = logging.getLogger(app_name)$/;"	v
+login	build/lib/knight/knight.py	/^def login():$/;"	f
+login	knight/knight.py	/^def login():$/;"	f
+logout	build/lib/knight/knight.py	/^def logout():$/;"	f
+logout	knight/knight.py	/^def logout():$/;"	f
+long_description	setup.py	/^	long_description = long_description,$/;"	v
+long_description	setup.py	/^    long_description = fh.read()$/;"	v
+long_description_content_type	setup.py	/^	long_description_content_type="text\/markdown",$/;"	v
+main	build/lib/knight/knight.py	/^def main():$/;"	f
+main	knight/knight.py	/^def main():$/;"	f
+name	setup.py	/^	name = "knight",$/;"	v
+ns	build/lib/knight/knight.py	/^class ns:$/;"	c
+ns	knight/knight.py	/^class ns:$/;"	c
+nsi	build/lib/knight/knight.py	/^nsi = ns()$/;"	v
+nsi	knight/knight.py	/^nsi = ns()$/;"	v
+packages	setup.py	/^	packages = find_packages(),$/;"	v
+parse_arguments	build/lib/knight/knight.py	/^def parse_arguments():$/;"	f
+parse_arguments	knight/knight.py	/^def parse_arguments():$/;"	f
+parser	build/lib/knight/knight.py	/^parser = argparse.ArgumentParser(description="CLI Version for Codechef for dummies....")$/;"	v
+parser	knight/knight.py	/^parser = argparse.ArgumentParser(description="CLI Version for Codechef for dummies....")$/;"	v
+persist	build/lib/knight/knight.py	/^def persist():$/;"	f
+persist	knight/knight.py	/^def persist():$/;"	f
+prepare_browser	build/lib/knight/knight.py	/^def prepare_browser(session = None):$/;"	f
+prepare_browser	knight/knight.py	/^def prepare_browser(session = None):$/;"	f
+print_submission_details	build/lib/knight/knight.py	/^def print_submission_details(pc):$/;"	f
+print_submission_details	knight/knight.py	/^def print_submission_details(pc):$/;"	f
+prompt_pwd	build/lib/knight/knight.py	/^        def prompt_pwd():$/;"	f	function:configure.input_u_p
+prompt_pwd	knight/knight.py	/^        def prompt_pwd():$/;"	f	function:configure.input_u_p
+rc_file	build/lib/knight/knight.py	/^rc_file = '.knightrc'$/;"	v
+rc_file	knight/knight.py	/^rc_file = '.knightrc'$/;"	v
+retrieve_session	build/lib/knight/knight.py	/^def retrieve_session():$/;"	f
+retrieve_session	knight/knight.py	/^def retrieve_session():$/;"	f
+session_file	build/lib/knight/knight.py	/^session_file = '.' + app_name + '.session.pkl'$/;"	v
+session_file	knight/knight.py	/^session_file = '.' + app_name + '.session.pkl'$/;"	v
+session_limit_url	build/lib/knight/knight.py	/^session_limit_url = 'https:\/\/www.codechef.com\/session\/limit'$/;"	v
+session_limit_url	knight/knight.py	/^session_limit_url = 'https:\/\/www.codechef.com\/session\/limit'$/;"	v
+solution_results	build/lib/knight/knight.py	/^solution_results = {$/;"	v
+solution_results	knight/knight.py	/^solution_results = {$/;"	v
+submit	build/lib/knight/knight.py	/^def submit(problem_code, solution_file):$/;"	f
+submit	knight/knight.py	/^def submit(problem_code, solution_file):$/;"	f
+url	setup.py	/^	url = 'https:\/\/github.com\/bradley101\/knight',$/;"	v
+user_agent	build/lib/knight/knight.py	/^user_agent = 'Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/70.0.3538.77 Safari\/537.36'$/;"	v
+user_agent	knight/knight.py	/^user_agent = 'Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/70.0.3538.77 Safari\/537.36'$/;"	v
+version	setup.py	/^	version = version,$/;"	v
