@@ -1,4 +1,5 @@
 
+
 ![enter image description here](https://github.com/bradley101/knight/raw/master/knight.jpg)
 
 
@@ -19,14 +20,29 @@ Knight is a command line utility for doing basic CodeChef operations like proble
 
 Note: **Knight** uses sessions  so your previous login session is saved for later use.
 
+## Usage Examples
 
+ - For **ONGOING** contest, If you want to select contest JUN20 (Div 2), just go to the Div 2 contest page and copy the last part of the URL. So it'll be JUN20B.
+
+	 `knight --select-contest JUN20B`
+
+	After this you can submit solutions to the problem inside the contest page by the following command
+
+	`knight -s <problem_code> <solution_file_location>`
+
+ - For **PAST** contests or **PRACTISE** problems, reset the contest if you haven't already done by `knight --reset-contest`
+ 
+	 Then just do `knight -s <problem_code> <solution_file_location>`
+Example - `knight -s COVDSMPL src/COVDSMPL.cpp`
+
+ - For an **ONGOING** contest you must set the `--select-conetest` parameter once
 
 # Installation
 
- - Linux & Unix systems - `$ pip install knight --upgrade`
- - Windows - `pip install knight --upgrade`
+`$ pip install knight --upgrade`
+
  
- For Windows users, you need to add installation directory to `PATH`. At the end of the installation, you'll be notified by a warning with a location/directory. Copy that location and add it to system's `PATH` variable.
+You need to add installation directory to `PATH`. At the end of the installation, you'll be notified by a warning with a location/directory. Copy that location and add it to system's `PATH` variable.
  # Requirements
  
  - Python 3.x
