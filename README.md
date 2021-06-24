@@ -2,6 +2,7 @@
 
 ![enter image description here](https://github.com/bradley101/knight/raw/master/knight.jpg)
 
+![Downloads](https://static.pepy.tech/personalized-badge/knight?period=total&units=international_system&left_color=black&right_color=orange&left_text=Downloads)
 
 Knight is a command line utility for doing basic CodeChef operations like problem submission, history, etc directly from the terminal. Trust me it helps 😀
 # Parameters & Usage
